@@ -1,13 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { envs, RpcCustomExceptionFilter } from './config';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
+  const logger = new Logger('Gateway-Client-Main');
   const app = await NestFactory.create(AppModule);
-
-  app.useGlobalFilters(new RpcCustomExceptionFilter());
-  await app.listen(envs.PORT);
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -15,6 +13,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  console.log(`Server is running on: ${envs.PORT}`);
+  app.useGlobalFilters(new RpcCustomExceptionFilter());
+  await app.listen(envs.PORT);
+  logger.log(`Server is running on: ${envs.PORT}`);
 }
 bootstrap();
